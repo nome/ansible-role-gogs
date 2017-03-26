@@ -1,0 +1,85 @@
+---
+- include_vars: arch-{{ ansible_architecture }}.yml
+
+# prerequisites: git package and user
+- name: install git
+  package: name=git state=present
+- name: create service user 
+  user: name={{ gogs_user }}
+
+# install/update Gogs
+- name: get latest Gogs release
+  local_action:
+    module: uri
+    url: https://github.com/gogits/gogs/releases/latest
+    method: GET
+    follow_redirects: no
+    status_code: 302
+  register: release_url
+  when: gogs_version == 'latest'
+- set_fact: gogs_version__={{ release_url.location | basename }}
+  when: gogs_version == 'latest'
+- set_fact: gogs_version__={{ gogs_version }}
+  when: gogs_version != 'latest'
+- name: download Gogs
+  get_url:
+    url: https://github.com/gogits/gogs/releases/download/{{ gogs_version__ }}/{{ gogs_arch }}.zip
+    dest: "{{ gogs_user_home }}/gogs-{{ gogs_version__ }}.zip"
+  register: dl_gogs
+  notify: restart gogs
+- block:
+  - name: check for existing Gogs
+    stat: path={{ gogs_user_home }}/gogs
+    register: stat_gogs
+  - name: shut down Gogs
+    when: stat_gogs.stat.isdir is defined
+    service: name=gogs state=stopped
+  - name: move old gogs
+    when: stat_gogs.stat.isdir is defined
+    command: mv gogs gogs_old chdir={{ gogs_user_home }}
+  - name: install unzip
+    package: name=unzip state=present
+  - name: unpack new gogs
+    unarchive:
+      copy: no
+      src: "{{ gogs_user_home }}/gogs-{{ gogs_version__ }}.zip"
+      dest: "{{ gogs_user_home }}"
+      owner: "{{ gogs_user }}"
+  - name: copy gogs state
+    when: stat_gogs.stat.isdir is defined
+    command: cp -a gogs_old/custom gogs_old/data gogs_old/log gogs chdir={{ gogs_user_home }}
+  - name: remove old gogs
+    file: path={{ gogs_user_home }}/gogs_old state=absent
+  when: dl_gogs.changed
+- name: creating Gogs conf directory
+  file: path={{ gogs_user_home }}/gogs/custom/conf state=directory owner={{ gogs_user }}
+- name: creating Gogs log directory
+  file: path={{ gogs_log_dir }} state=directory owner={{ gogs_user }}
+
+# create/update Gogs configuration
+- name: generate secret key
+  template: src=secret.j2 dest={{ gogs_user_home }}/gogs/custom/conf/secret owner={{ gogs_user }} mode=0600 force=no
+- name: read secret key
+  slurp: src={{ gogs_user_home }}/gogs/custom/conf/secret
+  register: secret_key
+- name: configuring Gogs
+  template: src=gogs.ini.j2 dest={{ gogs_user_home }}/gogs/custom/conf/app.ini owner={{ gogs_user }} mode=0600
+  notify: restart gogs
+- name: setup Gogs service (systemd)
+  template: src=gogs.service.j2 dest=/etc/systemd/system/gogs.service
+  when: ansible_service_mgr == "systemd"
+  notify: restart gogs
+- name: setup Gogs service (SysV)
+  template: src=gogs.init.j2 dest=/etc/init.d/gogs mode=0755
+  when: ansible_service_mgr != "systemd"
+
+- meta: flush_handlers
+- wait_for: port={{ gogs_http_port }} delay=5
+
+- name: create Gogs admin account
+  command: ./gogs admin create-user --admin --name {{ gogs_admin }} --password {{ gogs_admin_password }} --email {{ gogs_admin_email }}
+  args:
+    chdir: "{{ gogs_user_home }}/gogs"
+    creates: "{{ gogs_repo_dir }}/{{ gogs_admin }}"
+  become: yes
+  become_user: "{{ gogs_user }}"

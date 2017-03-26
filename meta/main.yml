@@ -1,0 +1,36 @@
+galaxy_info:
+  author: Knut Franke
+  description: Gogs Installation and Setup
+
+  license: BSD
+
+  min_ansible_version: 2.0
+
+  platforms:
+  - name: Fedora
+    versions:
+    - all
+  - name: ArchLinux
+    versions:
+    - all
+  - name: Ubuntu
+    versions:
+    - all
+  - name: Debian
+    versions:
+    - all
+  - name: EL
+    versions:
+    - all
+  - name: opensuse
+    versions:
+    - all
+  - name: SLES
+    versions:
+    - all
+
+  galaxy_tags:
+  - gogs
+  - git
+
+dependencies: []

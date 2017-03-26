@@ -1,0 +1,76 @@
+; {{ ansible_managed }}
+
+APP_NAME         = {{ gogs_app_name }}
+RUN_USER         = {{ gogs_user }}
+RUN_MODE         = prod
+
+[database]
+DB_TYPE          = {{ gogs_db_type }}
+{% if gogs_db_type == "sqlite3" %}
+PATH             = {{ gogs_user_home }}/gogs/data/gogs.db
+{% else %}
+HOST             = {{ gogs_db_host }}
+NAME             = {{ gogs_db_name }}
+USER             = {{ gogs_db_user }}
+PASSWD           = {{ gogs_db_password }}
+{% endif %}
+
+[repository]
+ROOT             = {{ gogs_repo_dir }}
+FORCE_PRIVATE    = {{ gogs_presets[gogs_preset].force_private }}
+
+[repository.upload]
+TEMP_PATH        = /tmp
+
+[server]
+PROTOCOL         = http
+DOMAIN           = {{ gogs_url | regex_replace('https?://([^:]*)(:[0-9]+)?', '\\1') }}
+HTTP_ADDR        = {{ gogs_bind_addr }}
+HTTP_PORT        = {{ gogs_http_port }}
+ROOT_URL         = {{ gogs_url }}
+UNIX_SOCKET_PERMISSIONS = 600
+DISABLE_SSH      = false
+SSH_PORT         = {{ gogs_ssh_url_port }}
+START_SSH_SERVER = false
+OFFLINE_MODE     = {{ gogs_presets[gogs_preset].offline_mode }}
+LANDING_PAGE     = {{ gogs_landing_page }}
+
+[mailer]
+{% if gogs_smtp_host is defined %}
+ENABLED = true
+HOST    = {{ gogs_smtp_host }}
+FROM    = {{ gogs_smtp_from }}
+{% else %}
+ENABLED = false
+{% endif %}
+{% if gogs_smtp_user is defined %}
+USER    = {{ gogs_smt_user }}
+{% endif %}
+{% if gogs_smtp_password is defined %}
+PASSWD  = {{ gogs_smt_password }}
+{% endif %}
+
+[service]
+REGISTER_EMAIL_CONFIRM = {{ gogs_smtp_host is defined }}
+ENABLE_NOTIFY_MAIL     = {{ gogs_smtp_host is defined }}
+DISABLE_REGISTRATION   = {{ not gogs_presets[gogs_preset].enable_registration }}
+ENABLE_CAPTCHA         = {{ gogs_presets[gogs_preset].enable_captcha }}
+REQUIRE_SIGNIN_VIEW    = {{ gogs_presets[gogs_preset].require_signin_view }}
+REQUIRE_SIGNIN_VIEW    = {{ gogs_presets[gogs_preset].require_signin_view }}
+ENABLE_REVERSE_PROXY_AUTHENTICATION = {{ gogs_presets[gogs_preset].reverse_proxy_auth }}
+ENABLE_REVERSE_PROXY_AUTO_REGISTRATION = {{ gogs_presets[gogs_preset].auto_registration }}
+
+[session]
+PROVIDER = memory
+
+[log]
+MODE      = file
+LEVEL     = Info
+ROOT_PATH = {{ gogs_log_dir }}
+
+[security]
+INSTALL_LOCK = true
+SECRET_KEY   = {{ secret_key.content | b64decode }}
+{% if gogs_presets[gogs_preset].reverse_proxy_auth %}
+REVERSE_PROXY_AUTHENTICATION_USER = {{ gogs_authentication_header }}
+{% endif %}

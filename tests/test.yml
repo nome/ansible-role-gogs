@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+    - role: nome.gogs
+      gogs_admin: gogs_admin
+      gogs_admin_password: test

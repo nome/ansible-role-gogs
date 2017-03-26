@@ -1,0 +1,47 @@
+---
+gogs_app_name: Gogs
+# landing page can be "home" or "explore"
+gogs_landing_page: explore
+
+# admin user/password must be set in playbook
+# gogs_admin:
+# gogs_admin_password:
+gogs_admin_email: "{{ gogs_admin }}@{{ ansible_fqdn }}"
+
+# preset covering several use-case related Gogs settings
+# public:  world-readable, users can self-register
+# private: accessible only for users created by admin
+# shared:  like private, but assumes multiple groups of users
+#          (forces new repositories to be private)
+# delegate: delegate authentication to reverse proxy
+gogs_preset: public
+
+# authentication header set by reverse proxy
+gogs_authentication_header: X-WEBAUTH-USER
+
+# set to v0.10.18 if you want to pin Gogs to that version
+gogs_version: latest
+
+gogs_bind_addr: 0.0.0.0
+gogs_http_port: 3000
+gogs_url: http://{{ ansible_fqdn }}:{{ gogs_http_port }}
+gogs_ssh_url_port: 22
+
+gogs_user: git
+gogs_user_home: /home/{{ gogs_user }}
+gogs_repo_dir: "{{ gogs_user_home }}/repos"
+gogs_log_dir: /var/log/gogs
+
+# mysql, postgres, mssql or sqlite3
+gogs_db_type: sqlite3
+gogs_db_host: 127.0.0.1:3306
+gogs_db_user: gogs
+gogs_db_password: gogs
+gogs_db_name: gogs
+
+# set these vars if you want Gogs to send mails
+# also enables email confirmation on user registration
+#gogs_smtp_host: smtp.example.com:587
+#gogs_smtp_user: gogs
+#gogs_smtp_password: smtp_pass
+gogs_smtp_from: "{{ gogs_admin_email }}"
