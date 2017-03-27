@@ -17,8 +17,8 @@ install:
   # Check ansible version
   - ansible --version
 
-  # Create ansible.cfg with correct roles_path
-  - printf '[defaults]\nroles_path=../\nallow_world_readable_tmpfiles=True' > ansible.cfg
+  # Activate ansible.cfg with Travis CI environment specific settings
+  - cp tests/ansible.cfg.travis ansible.cfg
 
   # Create symlink for this role, to make it appear under its proper name
   - ln -s ansible-role-gogs ../nome.gogs
