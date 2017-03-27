@@ -1,6 +1,14 @@
 ---
 - hosts: gogs
 
+  pre_tasks:
+  - name: Install dependency for SELinux configuration
+    package: name=libsemanage-python state=present
+    when: ansible_selinux
+  - name: Allow nginx to do network connects (SELinux)
+    seboolean: name=httpd_can_network_connect state=yes persistent=yes
+    when: ansible_selinux
+
   roles:
   - role: nome.gogs
     gogs_admin: gogsadmin
