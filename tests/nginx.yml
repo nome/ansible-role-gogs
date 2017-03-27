@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  become: true
+  become_user: root
+  become_method: sudo
+  roles:
+  - role: nome.gogs
+    gogs_admin: gogsadmin
+    gogs_admin_password: test
+
+    gogs_app_name: My Team's Repos
+    gogs_bind_addr: 127.0.0.1
+    gogs_url: http://{{ ansible_fqdn }}
+    gogs_preset: shared
+
+  - role: jdauphant.nginx
+    nginx_sites:
+      gogs:
+        - listen 80
+        - location / { proxy_pass http://127.0.0.1:{{ gogs_http_port }}; }
+
+  post_tasks:
+  - name: Wait until nginx responds
+    wait_for: port=80
+  - name: Check that home page is accessible
+    uri: url=http://{{ ansible_fqdn }}

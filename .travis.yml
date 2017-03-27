@@ -23,10 +23,13 @@ install:
   # Create symlink for this role, to make it appear under its proper name
   - ln -s ansible-role-gogs ../nome.gogs
 
+  # Install other roles required by trests
+  - ansible-galaxy install jdauphant.nginx geerlingguy.mysql
+
 script:
   # Basic role syntax check
   - ansible-playbook tests/test.yml -i tests/inventory --syntax-check
-  # Check minimal setup
+  # Run tests
   - ansible-playbook tests/test.yml -i tests/inventory -c local
 
 notifications:

@@ -1,0 +1,32 @@
+---
+- hosts: localhost
+  become: true
+  become_user: root
+  become_method: sudo
+
+  roles:
+  - role: geerlingguy.mysql
+    mysql_root_password: secure
+    mysql_databases:
+    - name: gogs
+    mysql_users:
+    - name: gogs
+      host: "%"
+      password: secure
+      priv: "gogs.*:ALL"
+
+  - role: nome.gogs
+    gogs_admin: gogsadmin
+    gogs_admin_password: test
+
+    gogs_db_type: mysql
+    gogs_db_host: localhost:3306
+    gogs_db_user: gogs
+    gogs_db_password: secure
+    gogs_db_name: gogs
+
+  post_tasks:
+  - name: Wait until Gogs responds
+    wait_for: port={{ gogs_http_port }}
+  - name: Check that home page is accessible
+    uri: url=http://localhost:{{ gogs_http_port }}
