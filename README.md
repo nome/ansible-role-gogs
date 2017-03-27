@@ -19,13 +19,16 @@ cannot be set via this role. Pull requests are welcome, though.
 Minimal playbook example
 ------------------------
 
-    - hosts: gogs
+    - hosts: localhost
       roles:
       - role: nome.gogs
         gogs_admin: gogsadmin
         gogs_admin_password: secret
 
-Note that calling the admin user `admin` won't work, since this user id is reserved in Gogs.
+Note that calling the admin user `admin` won't work, since this user id is
+reserved in Gogs. After the playbook has run, Gogs should be reachable at
+<http://localhost:3000> (as well as `http://yourhost:3000` from other hosts,
+unless prevented by a local firewall).
 
 
 Typical playbook example
@@ -63,9 +66,10 @@ configured via the
             - listen 80
             - location / { proxy_pass http://127.0.0.1:{{ gogs_http_port }}; }
 
-For demonstration purposes, all variables are given as role parameters. In a
-real-world setup, you may want to put them in a separate file, e.g.
-`vars/main.yml`.
+In addition to the SELinux setting included in this example, you may also need
+to open port 80 on the firewall, e.g. in RHEL7:
+
+    - firewalld: service=http state=enabled permanent=true
 
 
 Using a database server
