@@ -1,4 +1,4 @@
-[![Travis CI](https://travis-ci.org/nome/ansible-role-gogs.png)](https://travis-ci.org/nome/ansible-role-gogs)
+[![Travis CI](https://travis-ci.org/nome/ansible-role-gogs.svg?branch=master)](https://travis-ci.org/nome/ansible-role-gogs)
 
 Ansible Role: Gogs Installation and Setup
 =========================================
