@@ -36,7 +36,7 @@ gogs_log_dir: /var/log/gogs
 gogs_db_type: sqlite3
 gogs_db_host: 127.0.0.1:3306
 gogs_db_user: gogs
-gogs_db_password: gogs
+#gogs_db_password:
 gogs_db_name: gogs
 
 # set these vars if you want Gogs to send mails
