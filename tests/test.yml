@@ -1,4 +1,4 @@
 ---
 - include: minimal.yml
 - include: nginx.yml
-- include: mysql.yml
+#- include: mysql.yml
