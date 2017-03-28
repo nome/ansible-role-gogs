@@ -4,11 +4,14 @@ python: "2.7"
 
 sudo: required
 
-# Install ansible
+dist: trusty
 addons:
   apt:
     packages:
     - python-pip
+    - mysql-server-5.5
+    - mysql-client-core-5.5
+    - mysql-client-5.5
 
 install:
   # Install ansible
@@ -26,11 +29,14 @@ install:
   # Install other roles required by trests
   - ansible-galaxy install jdauphant.nginx geerlingguy.mysql
 
+
 script:
   # Basic role syntax check
   - ansible-playbook tests/test.yml -i tests/inventory --syntax-check
   # Run tests
   - ansible-playbook tests/test.yml -i tests/inventory -c local
+  # debug
+  - sudo service mysql restart
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
