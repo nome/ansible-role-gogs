@@ -45,3 +45,8 @@ gogs_db_name: gogs
 #gogs_smtp_user: gogs
 #gogs_smtp_password: smtp_pass
 gogs_smtp_from: "{{ gogs_admin_email }}"
+
+# Download installation sources on the control host instead of the target host.
+# This is necessary when the target host can't download from the internet due
+# to proxy/firewall configuration.
+gogs_install_via_localhost: false
