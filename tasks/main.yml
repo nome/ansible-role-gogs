@@ -7,7 +7,7 @@
 - name: create service user 
   user: name={{ gogs_user }}
 
-# install/update Gogs
+# resolve gogs_version=latest
 - name: get latest Gogs release
   local_action:
     module: uri
@@ -17,52 +17,33 @@
     status_code: 302
   register: release_url
   when: gogs_version == 'latest'
-- set_fact: gogs_version__={{ release_url.location | basename }}
+- set_fact: __gogs_version={{ release_url.location | basename }}
   when: gogs_version == 'latest'
-- set_fact: gogs_version__={{ gogs_version }}
+- set_fact: __gogs_version={{ gogs_version }}
   when: gogs_version != 'latest'
-- name: download Gogs
-  when: not gogs_install_via_localhost
-  get_url:
-    url: https://github.com/gogits/gogs/releases/download/{{ gogs_version__ }}/{{ gogs_arch }}.zip
-    dest: "{{ gogs_user_home }}/gogs-{{ gogs_version__ }}.zip"
-  register: gogs_zip
-  notify: restart gogs
-- name: download Gogs via localhost
-  when: gogs_install_via_localhost
-  local_action:
-    module: get_url
-    url: https://github.com/gogits/gogs/releases/download/{{ gogs_version__ }}/{{ gogs_arch }}.zip
-    dest: "/tmp/gogs-{{ gogs_version__ }}.zip"
-- name: copy Gogs from localhost
-  when: gogs_install_via_localhost
-  copy: src=/tmp/gogs-{{ gogs_version__ }}.zip dest={{ gogs_user_home }}/gogs-{{ gogs_version__ }}.zip
-  register: gogs_zip_local
-  notify: restart gogs
+
+# build Gogs on localhost, if applicable
+# assumes Git and Go >= 1.5 are installed and GOROOT/GOPATH are set
 - block:
-  - name: check for existing Gogs
-    stat: path={{ gogs_user_home }}/gogs
-    register: stat_gogs
-  - name: shut down Gogs
-    when: stat_gogs.stat.isdir is defined
-    service: name=gogs state=stopped
-  - name: move old gogs
-    when: stat_gogs.stat.isdir is defined
-    command: mv gogs gogs_old chdir={{ gogs_user_home }}
-  - name: install unzip
-    package: name=unzip state=present
-  - name: unpack new gogs
-    unarchive:
-      copy: no
-      src: "{{ gogs_user_home }}/gogs-{{ gogs_version__ }}.zip"
-      dest: "{{ gogs_user_home }}"
-      owner: "{{ gogs_user }}"
-  - name: copy gogs state
-    when: stat_gogs.stat.isdir is defined
-    command: cp -a gogs_old/custom gogs_old/data gogs_old/log gogs chdir={{ gogs_user_home }}
-  - name: remove old gogs
-    file: path={{ gogs_user_home }}/gogs_old state=absent
-  when: gogs_zip.changed or gogs_zip_local.changed
+  - include: build.yml
+    delegate_to: 127.0.0.1
+    vars:
+      gogs_goroot: "{{ lookup('env', 'GOROOT') }}"
+      gogs_gopath: "{{ lookup('env', 'GOPATH') }}"
+  - command: zip -r  -x '*.git*' /tmp/gogs-{{ __gogs_version }}.zip gogs
+    delegate_to: 127.0.0.1
+    args:
+      chdir: "{{ lookup('env', 'GOPATH') }}/src/github.com/gogits"
+  when: gogs_install_from_source and gogs_install_via_localhost
+
+# install/update Gogs
+- include: from_binary.yml
+  when: not gogs_install_from_source or gogs_install_via_localhost
+- include: from_source.yml
+  when: gogs_install_from_source and not gogs_install_via_localhost
+  vars:
+    gogs_goroot: "{{ gogs_user_home }}/.local/go"
+    gogs_gopath: "{{ gogs_user_home }}/go"
 - name: creating Gogs conf directory
   file: path={{ gogs_user_home }}/gogs/custom/conf state=directory owner={{ gogs_user }}
 - name: creating Gogs log directory

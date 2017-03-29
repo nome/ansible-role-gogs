@@ -12,6 +12,17 @@
 
 - include: minimal.yml gogs_install_via_localhost=true gogs_user=git_local gogs_http_port=3001 gogs_log_dir=/home/git_local/gogs/log
 
+- hosts: gogs
+  tasks:
+  - service: name=gogs state=stopped
+  - file: name=/etc/systemd/system/gogs.service state=absent
+    when: ansible_service_mgr == "systemd"
+  - command: systemctl daemon-reload
+    when: ansible_service_mgr == "systemd"
+  - file: name=/var/log/gogs state=absent
+
+- include: minimal.yml gogs_install_from_source=true gogs_user=git_src gogs_http_port=3002 gogs_log_dir=/home/git_src/gogs/log
+
 - include: nginx.yml
 
 - include: mysql.yml

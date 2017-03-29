@@ -1,0 +1,43 @@
+---
+- name: download Gogs
+  when: not gogs_install_via_localhost
+  get_url:
+    url: https://github.com/gogits/gogs/releases/download/{{ __gogs_version }}/{{ gogs_arch }}.zip
+    dest: "{{ gogs_user_home }}/gogs-{{ __gogs_version }}.zip"
+  register: gogs_zip
+  notify: restart gogs
+- name: download Gogs via localhost
+  when: gogs_install_via_localhost
+  local_action:
+    module: get_url
+    url: https://github.com/gogits/gogs/releases/download/{{ __gogs_version }}/{{ gogs_arch }}.zip
+    dest: "/tmp/gogs-{{ __gogs_version }}.zip"
+- name: copy Gogs from localhost
+  when: gogs_install_via_localhost
+  copy: src=/tmp/gogs-{{ __gogs_version }}.zip dest={{ gogs_user_home }}/gogs-{{ __gogs_version }}.zip
+  register: gogs_zip_local
+  notify: restart gogs
+- block:
+  - name: check for existing Gogs
+    stat: path={{ gogs_user_home }}/gogs
+    register: stat_gogs
+  - name: shut down Gogs
+    when: stat_gogs.stat.isdir is defined
+    service: name=gogs state=stopped
+  - name: move old gogs
+    when: stat_gogs.stat.isdir is defined
+    command: mv gogs gogs_old chdir={{ gogs_user_home }}
+  - name: install unzip
+    package: name=unzip state=present
+  - name: unpack new gogs
+    unarchive:
+      copy: no
+      src: "{{ gogs_user_home }}/gogs-{{ __gogs_version }}.zip"
+      dest: "{{ gogs_user_home }}"
+      owner: "{{ gogs_user }}"
+  - name: copy gogs state
+    when: stat_gogs.stat.isdir is defined
+    command: cp -a gogs_old/custom gogs_old/data gogs_old/log gogs chdir={{ gogs_user_home }}
+  - name: remove old gogs
+    file: path={{ gogs_user_home }}/gogs_old state=absent
+  when: gogs_zip.changed or gogs_zip_local.changed

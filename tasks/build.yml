@@ -1,0 +1,14 @@
+---
+- name: Get/update Gogs sources from GitHub
+  git:
+    repo: https://github.com/gogits/gogs
+    dest: "{{ gogs_gopath }}/src/github.com/gogits/gogs"
+    version: "{{ __gogs_version }}"
+  register: gogs_repo
+- name: go build gogs
+  command: go build {{ "-tags sqlite" if gogs_db_type == "sqlite3" }} chdir={{ gogs_gopath }}/src/github.com/gogits/gogs
+  when: gogs_repo.changed
+  environment:
+    GOROOT: "{{ gogs_goroot }}"
+    GOPATH: "{{ gogs_gopath }}"
+    PATH: "{{ gogs_goroot }}/bin:{{ gogs_gopath }}/bin:{{ ansible_env.PATH }}"

@@ -50,3 +50,9 @@ gogs_smtp_from: "{{ gogs_admin_email }}"
 # This is necessary when the target host can't download from the internet due
 # to proxy/firewall configuration.
 gogs_install_via_localhost: false
+
+# Get Gogs sources from GitHub and build them. Installs the Go compiler to
+# {{ gogs_user_home }}/.local (since OS packages are often too old).
+gogs_install_from_source: false
+
+gogs_golang_version: go1.8

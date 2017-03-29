@@ -1,2 +1,3 @@
 ---
 gogs_arch: raspi2_armv6
+golang_arch: linux-armv6l
