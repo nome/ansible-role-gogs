@@ -62,9 +62,14 @@
   template: src=gogs.service.j2 dest=/etc/systemd/system/gogs.service
   when: ansible_service_mgr == "systemd"
   notify: restart gogs
+# make sure systemd loads a new or updated gogs.service file
+- name: reload systemd
+  systemd: name=gogs enabled=yes daemon_reload=yes
+  when: ansible_service_mgr == "systemd"
 - name: setup Gogs service (SysV)
   template: src=gogs.init.j2 dest=/etc/init.d/gogs mode=0755
   when: ansible_service_mgr != "systemd"
+  notify: restart gogs
 
 - meta: flush_handlers
 - wait_for: port={{ gogs_http_port }} delay=5
