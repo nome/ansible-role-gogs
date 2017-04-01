@@ -103,9 +103,47 @@ MySQL server could look like the following, using the
         gogs_db_password: secure
         gogs_db_name: gogs
 
+Supported values for `gogs_db_type` are `mysql`, `postgres`, `mssql` and `sqlite3`.
 
-Role variables
---------------
+
+Enable sending Mails
+--------------------
+
+In order to enable Gogs to send mails, e.g. update notifications and
+confirmation mails on user registration, the following settings need to be
+supplied:
+
+    gogs_smtp_host: smtp.example.com:587
+    gogs_smtp_user: my_smtp_user
+    gogs_smtp_password: my_smtp_password
+
+
+Gogs version and installation methods
+-------------------------------------
+
+By default, the latest Gogs release is installed. This can be changed by
+setting `gogs_version` to the desired release (e.g. `gogs_version=v0.10.18`).
+
+The (possibly unreleased) "bleeding edge" version of Gogs can be pulled from
+GitHub and compiled with the following settings:
+
+    gogs_install_from_source: true
+    gogs_version: master
+
+Since distribution packages of the Go compiler are often too old to compile
+Gogs, official binaries of the Go copmiler are downloaded from Google and
+installed to `/home/git/.local`.
+
+If the target machine can't access the internet (i.e. due to firewall or proxy
+settings), set `gogs_install_via_localhost=true`. This will route all downloads
+through the control host. When combined with `gogs_install_from_source`, the Go
+compiler is *not* downloaded automatically; Git and Go >= 1.5 need to be
+already installed on the control host, and the environment variables `GOROOT`
+and `GOPATH` need to be set to suitable values.
+
+
+Other role variables
+--------------------
 
 See [`defaults/main.yml`](defaults/main.yml).
 

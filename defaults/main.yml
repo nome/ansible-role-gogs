@@ -1,4 +1,5 @@
 ---
+# application name used in web page title
 gogs_app_name: Gogs
 # landing page can be "home" or "explore"
 gogs_landing_page: explore
@@ -17,6 +18,7 @@ gogs_admin_email: "{{ gogs_admin }}@{{ ansible_fqdn }}"
 gogs_preset: public
 
 # authentication header set by reverse proxy
+# only applies when gogs_preset=delegate
 gogs_authentication_header: X-WEBAUTH-USER
 
 # set to v0.10.18 if you want to pin Gogs to that version
@@ -24,9 +26,12 @@ gogs_version: latest
 
 gogs_bind_addr: 0.0.0.0
 gogs_http_port: 3000
+# base URL as seen by clients (for http clone URLs)
 gogs_url: http://{{ ansible_fqdn }}:{{ gogs_http_port }}
+# SSH port as seen by clients (for ssh clone URLs)
 gogs_ssh_url_port: 22
 
+# OS user under which Gogs will be running
 gogs_user: git
 gogs_user_home: /home/{{ gogs_user }}
 gogs_repo_dir: "{{ gogs_user_home }}/repos"
@@ -53,6 +58,12 @@ gogs_install_via_localhost: false
 
 # Get Gogs sources from GitHub and build them. Installs the Go compiler to
 # {{ gogs_user_home }}/.local (since OS packages are often too old).
+#
+# When combined with gogs_install_via_localhost, assumes that Git and Go >= 1.5
+# are installed on the control host, and that the environment variables GOROOT
+# and GOPATH are set to suitable values.
 gogs_install_from_source: false
 
+# Version of Go compiler to be downloaded when gogs_install_from_source is true
+# and gogs_install_via_localhost is false.
 gogs_golang_version: go1.8
