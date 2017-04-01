@@ -24,7 +24,7 @@ TEMP_PATH        = /tmp
 
 [server]
 PROTOCOL         = http
-DOMAIN           = {{ gogs_url | regex_replace('https?://([^:]*)(:[0-9]+)?', '\\1') }}
+DOMAIN           = {{ gogs_url | regex_replace('https?://([^:/]*).*', '\\1') }}
 HTTP_ADDR        = {{ gogs_bind_addr }}
 HTTP_PORT        = {{ gogs_http_port }}
 ROOT_URL         = {{ gogs_url }}
