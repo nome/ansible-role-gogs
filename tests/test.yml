@@ -1,4 +1,16 @@
 ---
+# make sure package cache is up to date
+# otherwise, package installs may fail
+- hosts: gogs
+  tasks:
+  - apt: update_cache=yes
+    when: ansible_pkg_mgr == 'apt'
+  # for yum, a package name is required, even if we only want update_cache
+  - yum: update_cache=yes name=git
+    when: ansible_pkg_mgr == 'yum'
+  - pacman: update_cache=yes
+    when: ansible_pkg_mgr == 'pacman'
+
 - include: minimal.yml gogs_log_dir=/home/git/gogs/log
 
 - hosts: gogs
