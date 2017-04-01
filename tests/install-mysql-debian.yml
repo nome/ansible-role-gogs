@@ -1,0 +1,12 @@
+---
+- hosts: gogs
+  tasks:
+  - apt: name=mysql-server update_cache=yes
+  - apt: name=mysql-common
+
+  - service: "name=mysql state=stopped"
+  
+  - file: path=/var/lib/mysql/{{item}} state=absent
+    with_items:
+            - "ib_logfile0"
+            - "ib_logfile1"

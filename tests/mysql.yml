@@ -11,12 +11,7 @@
       host: "%"
       password: secure
       priv: "gogs.*:ALL"
-    mysql_packages:
-    # we don't need MySQL 5.6 for this test, nor for installing on Ubuntu in
-    # general; but it's the only version that works on Travis's customized
-    # Ubuntu Trusty image
-    - mysql-server-5.6
-    - mysql-client-5.6
+    mysql_packages: []
 
   - role: nome.gogs
     gogs_admin: gogsadmin

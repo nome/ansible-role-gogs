@@ -27,7 +27,7 @@ install:
   # Create symlink for this role, to make it appear under its proper name
   - ln -s ansible-role-gogs ../nome.gogs
 
-  # Install other roles required by trests
+  # Install other roles required by tests
   - ansible-galaxy install jdauphant.nginx geerlingguy.mysql
 
 script:

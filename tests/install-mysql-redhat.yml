@@ -1,0 +1,9 @@
+---
+- hosts: gogs
+  vars:
+    __pkgs:
+      "6": [ "mysql", "mysql-server" ]
+      "7": [ "mariadb", "mariadb-server", "mariadb-libs", "MySQL-python", "perl-DBD-MySQL" ]
+  tasks:
+  - yum: name={{ item }} update_cache=yes
+    with_items: "{{ __pkgs[ansible_distribution_major_version] }}"
