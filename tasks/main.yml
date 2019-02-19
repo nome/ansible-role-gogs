@@ -13,11 +13,10 @@
     module: uri
     url: https://github.com/gogits/gogs/releases/latest
     method: GET
-    follow_redirects: no
-    status_code: 302
+    follow_redirects: true
   register: release_url
   when: gogs_version == 'latest'
-- set_fact: __gogs_version={{ release_url.location | basename }}
+- set_fact: __gogs_version={{ release_url.url | basename }}
   when: gogs_version == 'latest'
 - set_fact: __gogs_version={{ gogs_version }}
   when: gogs_version != 'latest'
